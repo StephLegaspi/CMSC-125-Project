@@ -13,26 +13,24 @@
 int menu(){
 	int choice;
 
-	do{
-		printf("[1] Easy\n");
-		printf("[2] Medium\n");
-		printf("[3] Hard\n");
-		printf("[4] Back to menu\n");
-		printf("Choice: ");
-		scanf("%d", &choice);
+	printf("[1] Easy\n");
+	printf("[2] Medium\n");
+	printf("[3] Hard\n");
+	printf("[4] Quit\n");
+	printf("Choice: ");
+	scanf("%d", &choice);
 
-		switch(choice){
-			case 1:
-				return EASY;
-				break;
-			case 2:
-				return MEDIUM;
-				break;
-			case 3:
-				return HARD;
-				break;
-		}
-	}while(choice != 4);
+	switch(choice){
+		case 1:
+			return EASY;
+			break;
+		case 2:
+			return MEDIUM;
+			break;
+		case 3:
+			return HARD;
+			break;
+	}
 }
 
 void readDescriptions(char desc[MAX_OBJECTS][STR_LEN], int noOfObjects){
@@ -76,12 +74,18 @@ char *readObjects(int *noOfObjects){
 	return objs;
 }
 
+void freeObjs(char *objects, int *noOfObjects){
+	int i;
+	free(objects);
+}
+
 void initBoard(char board[BOARD_ROW][BOARD_COL], char *objects, int boundary){
 	int i, j, x, y;
 
 	for(i=0; i<BOARD_ROW; i++){
 		for(j=0; j<BOARD_COL; j++){
-			board[i][j] = ' ';
+			if (i==0 || j==0 || i==BOARD_ROW-1 || j==BOARD_COL-1) board[i][j] = '+';
+			else board[i][j] = ' ';
 		}
 	}
 
@@ -110,20 +114,92 @@ void printBoard(char board[BOARD_ROW][BOARD_COL]){
 	}
 }
 
+void movePlayer(char board[BOARD_ROW][BOARD_COL]){
+	int i, j, x_pos, y_pos;
+	char move;
+	
+	for(i=0; i<BOARD_ROW; i++){
+		for(j=0; j<BOARD_COL; j++){
+			if (board[i][j] == '#'){
+				x_pos = i;
+				y_pos = j;
+				break;
+			}
+		}
+	}
+
+
+	do{
+		scanf("%c", &move);
+		printf("\n[W] Up\n");
+		printf("[S] Down\n");
+		printf("[A] Left\n");
+		printf("[D] Right\n");
+		printf("[Q] Quit\n");
+		printf("Move: ");
+
+		scanf("%c", &move);
+
+		switch(move){
+			case 'W':
+				if (board[x_pos-1][y_pos] == ' '){
+					board[x_pos][y_pos] = ' ';
+					x_pos-=1;
+					board[x_pos][y_pos] = '#';
+				}
+				break;
+			case 'S':
+				if (board[x_pos+1][y_pos] == ' '){
+					board[x_pos][y_pos] = ' ';
+					x_pos+=1;
+					board[x_pos][y_pos] = '#';
+				}
+				break;
+			case 'A':
+				if (board[x_pos][y_pos-1] == ' '){
+					board[x_pos][y_pos] = ' ';
+					y_pos-=1;
+					board[x_pos][y_pos] = '#';
+				}
+				break;
+			case 'D':
+				if (board[x_pos][y_pos+1] == ' '){
+					board[x_pos][y_pos] = ' ';
+					y_pos+=1;
+					board[x_pos][y_pos] = '#';
+				}
+				break;
+			default:
+				printf("Invalid move!\n");
+				break;
+		}
+		printf("\n");
+		printBoard(board);
+	}while(move!='Q');
+}
+
 int main(){
-	int i, j, noOfObjects, boundary;
+	int i, j, noOfObjects, boundary=0;
 	char board[BOARD_ROW][BOARD_COL], desc[MAX_OBJECTS][STR_LEN];
 	char *objects;
 
-	boundary = menu();
-	objects = readObjects(&noOfObjects);
-	initBoard(board, objects, boundary);
-	printBoard(board);
-	readDescriptions(desc, noOfObjects);
-
-	for(i=0; i<noOfObjects; i++){
-		printf("%s\n", desc[i]);
+	while(boundary!=4){
+		boundary = menu();
+		objects = readObjects(&noOfObjects);
+		initBoard(board, objects, boundary);
+		if (boundary!=4){
+			printBoard(board);
+			readDescriptions(desc, noOfObjects);
+			freeObjs(objects, &noOfObjects);
+			movePlayer(board);
+		}
 	}
+
+	
+
+	// for(i=0; i<noOfObjects; i++){
+	// 	printf("%s\n", desc[i]);
+	// }
 
 	return 0;
 }
